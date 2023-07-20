@@ -15,26 +15,27 @@ import lombok.NoArgsConstructor;
 public class RespBean {
     private long code;
     private String message;
+    private String requestId;
     private Object obj;
 
     //成功后,携带数据
-    public static RespBean success(Object data){
+    public static RespBean success(String requestId,Object data){
         return new RespBean(RespBeanEnum.SUCCESS.getCode(),
-                RespBeanEnum.SUCCESS.getMessage(),data);
+                RespBeanEnum.SUCCESS.getMessage(),requestId,data);
     }
-    public static RespBean success(){
+    public static RespBean success(String requestId){
         return new RespBean(RespBeanEnum.SUCCESS.getCode(),
-                RespBeanEnum.SUCCESS.getMessage(),null);
+                RespBeanEnum.SUCCESS.getMessage(),requestId,null);
     }
 
     //失败,不带数据
-    public static RespBean error(RespBeanEnum respBeanEnum){
+    public static RespBean error(RespBeanEnum respBeanEnum,String requestId){
         return new RespBean(respBeanEnum.getCode(),
-                respBeanEnum.getMessage(),null);
+                respBeanEnum.getMessage(),requestId,null);
     }
-    public static RespBean error(RespBeanEnum respBeanEnum,Object obj){
+    public static RespBean error(RespBeanEnum respBeanEnum,String requestId,Object obj){
         return new RespBean(respBeanEnum.getCode(),
-                respBeanEnum.getMessage(),obj);
+                respBeanEnum.getMessage(),requestId,obj);
     }
 
 

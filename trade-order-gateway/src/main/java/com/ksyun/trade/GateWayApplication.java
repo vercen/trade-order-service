@@ -2,8 +2,10 @@ package com.ksyun.trade;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *  1.EnableAsync(proxyTargetClass=true)配置代理为cglib代理(默认使用的是jdk动态代理)
@@ -16,7 +18,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class GateWayApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(GateWayApplication.class, args);
     }
+
+
 
 }

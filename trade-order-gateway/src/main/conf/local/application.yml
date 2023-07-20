@@ -7,5 +7,5 @@ info:
 server:
   port: 8088
 
-actions: http://campus.query1.ksyun.com:8089,http://campus.query2.ksyun.com:8089
+actions: http://localhost:8089,http://localhost:8001
 meta: http://campus.meta.ksyun.com:8090

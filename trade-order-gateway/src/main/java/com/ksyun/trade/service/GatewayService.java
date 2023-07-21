@@ -1,6 +1,7 @@
 package com.ksyun.trade.service;
 
 import com.ksyun.trade.client.OrderClient;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class GatewayService {
 
     @Autowired
@@ -27,13 +29,13 @@ public class GatewayService {
     public Object loadLalancing(Object param) {
         // 1. 模拟路由 (负载均衡) 获取接口
         String url = orderClient.getRandomUrl();
-        System.out.println("url: " + url);
-
+        log.info("url:{}", url);
+        log.info("param:{}", param);
         // 2. 请求转发
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         HttpEntity<Object> requestEntity = new HttpEntity<>(param, headers);
-        ResponseEntity<Object> responseEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
+        ResponseEntity<Object> responseEntity = restTemplate.exchange(url+"/online/trade_order/"+param, HttpMethod.POST, requestEntity, Object.class);
         return responseEntity.getBody();
     }
 

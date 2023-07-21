@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ksyun.trade.mapper.OrderMapper">
+
+    <resultMap type="com.ksyun.trade.pojo.KscTradeOrder" id="TradeOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="regionId" column="region_id" jdbcType="INTEGER"/>
+        <result property="productId" column="product_id" jdbcType="INTEGER"/>
+        <result property="priceValue" column="price_value" jdbcType="NUMERIC"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="queryById" resultMap="TradeOrderMap">
+        select * from ksc_trade_order where id = #{id}
+    </select>
+</mapper>

@@ -18,6 +18,7 @@ public class TradeOrderController {
 
     @RequestMapping("/{id}")
     public RestResult query(@PathVariable("id") Integer id) {
+        log.info("query order id:{}", id);
         return RestResult.success().data(orderService.query(id));
     }
 

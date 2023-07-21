@@ -13,7 +13,7 @@ public class TradeOrderServiceTest extends BaseSpringAllTest {
 
     @Test
     public void query() {
-
+       trandeOrderService.query(1);
     }
 
 }

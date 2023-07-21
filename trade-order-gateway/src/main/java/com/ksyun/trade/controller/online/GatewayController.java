@@ -2,12 +2,15 @@ package com.ksyun.trade.controller.online;
 
 import com.ksyun.trade.dto.VoucherDeductDTO;
 import com.ksyun.trade.service.GatewayService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 public class GatewayController {
     @Autowired
     private GatewayService gatewayService;
@@ -17,6 +20,7 @@ public class GatewayController {
      */
     @RequestMapping(value = "/online/queryOrderInfo", produces = "application/json")
     public Object queryOrderInfo(Integer id) {
+        log.info("id:{}", id);
         return gatewayService.loadLalancing(id);
     }
 

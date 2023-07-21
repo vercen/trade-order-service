@@ -23,10 +23,10 @@ spring:
     username: root
     password: password
   redis:
-    host: campus-dev.redis.ksyun.com
-    port: 26356
-    password: TkSbRi%xQtFkEX98BQR3yQ==
-    db: 3
+    host: 192.168.63.3
+    port: 6379
+    #password: TkSbRi%xQtFkEX98BQR3yQ==
+    database: 3
 
 meta:
   url: http://campus.meta.ksyun.com:8090

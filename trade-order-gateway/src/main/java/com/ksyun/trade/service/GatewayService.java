@@ -33,12 +33,9 @@ public class GatewayService {
         log.info("param:{}", param);
         // 2. 请求转发
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
-        HttpEntity<Object> requestEntity = new HttpEntity<>(param, headers);
-        ResponseEntity<Object> responseEntity = restTemplate.exchange(url+"/online/trade_order/"+param, HttpMethod.POST, requestEntity, Object.class);
-        return responseEntity.getBody();
+        headers.add("requestId", "test123456"); // 在这里添加 "requestId" 头部
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "online/trade_order/" + param, String.class, headers);
+        return forEntity.getBody();
     }
-
-
 
 }

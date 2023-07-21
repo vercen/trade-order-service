@@ -21,10 +21,8 @@ public class GatewayService {
     @Autowired
     private OrderClient orderClient;
 
-    private RestTemplate restTemplate=new RestTemplate();
-
-
-
+    @Autowired
+    private RestTemplate restTemplate;
 
     public Object loadLalancing(Object param) {
         // 1. 模拟路由 (负载均衡) 获取接口

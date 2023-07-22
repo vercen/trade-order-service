@@ -1,5 +1,6 @@
 package com.ksyun.trade.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -19,6 +20,7 @@ public class KscTradeProductConfig implements Serializable {
     * 
     */
     @NotNull(message="[]不能为空")
+    @JsonIgnore
     private Integer id;
     /**
     * 
@@ -50,6 +52,7 @@ public class KscTradeProductConfig implements Serializable {
     * 
     */
     @NotNull(message="[]不能为空")
+    @JsonIgnore
     private Integer orderId;
 
 }

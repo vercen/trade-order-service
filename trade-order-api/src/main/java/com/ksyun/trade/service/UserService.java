@@ -24,12 +24,10 @@ public class UserService {
     private String url;
 
     public User querybyid(Integer id) {
-        System.out.println("查询用户信息"+id);
-        User user = (User) redisTemplate.opsForValue().get("user:"+id);
 
+        User user = (User) redisTemplate.opsForValue().get("user:"+id);
         if (user != null) {
             System.out.println(user.toString());
-            System.out.println("从缓存中获取数据");
             return user;
         }
         ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "online/user/" + id, String.class);
@@ -37,7 +35,6 @@ public class UserService {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-
             if (jsonNode.has("data")) {
                 JsonNode userData = jsonNode.get("data");
                 user = objectMapper.treeToValue(userData, User.class);

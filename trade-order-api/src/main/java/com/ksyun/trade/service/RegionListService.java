@@ -3,6 +3,7 @@ package com.ksyun.trade.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ksyun.trade.pojo.Region;
+import com.ksyun.trade.vo.RegionVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +23,14 @@ public class RegionListService {
     @Value("${meta.url}")
     private String url;
 
-    public static HashMap<String, Region> regionList;
+    public static HashMap<String, RegionVo> regionList;
 
     @PostConstruct
     public void init() {
         regionList = new HashMap<>();
         ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "/online/region/list", String.class);
         String jsonResponse = forEntity.getBody();
+        System.out.println("jsonResponse = " + jsonResponse);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
@@ -37,7 +39,10 @@ public class RegionListService {
                 JsonNode regionListData = jsonNode.get("data");
                 for (JsonNode regionData : regionListData) {
                     Region region = objectMapper.treeToValue(regionData, Region.class);
-                    regionList.put(region.getId(), region);
+                    RegionVo regionVo = new RegionVo();
+                    regionVo.setCode(region.getCode());
+                    regionVo.setName(region.getName());
+                    regionList.put(region.getId(), regionVo);
                 }
 
             } else {
@@ -49,7 +54,4 @@ public class RegionListService {
         }
     }
 
-    public HashMap<String, Region> getRegionList() {
-        return regionList;
-    }
 }

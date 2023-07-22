@@ -14,6 +14,6 @@ public class OrderVo {
     private int id;
     private BigDecimal priceValue;
     private User user;
-    private Region region;
+    private RegionVo region;
     private List<KscTradeProductConfig> configs;
 }

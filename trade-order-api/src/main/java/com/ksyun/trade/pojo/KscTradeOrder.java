@@ -28,7 +28,7 @@ public class KscTradeOrder implements Serializable {
     * 
     */
     @NotNull(message="[]不能为空")
-    private Integer regionId;
+    private String regionId;
     /**
     * 
     */

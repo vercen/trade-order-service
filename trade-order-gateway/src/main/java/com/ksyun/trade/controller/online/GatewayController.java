@@ -20,8 +20,7 @@ public class GatewayController {
      */
     @RequestMapping(value = "/online/queryOrderInfo", produces = "application/json")
     public Object queryOrderInfo(Integer id) {
-        log.info("id:{}", id);
-        return gatewayService.loadLalancing(id);
+        return gatewayService.orderloadLalancing(id);
     }
 
     /**
@@ -29,7 +28,7 @@ public class GatewayController {
      */
     @RequestMapping(value = "/online/queryRegionName", produces = "application/json")
     public Object queryRegionName(Integer regionId) {
-        return gatewayService.loadLalancing(regionId);
+        return gatewayService.regionIdloadLalancing(regionId);
     }
 
     /**
@@ -37,7 +36,7 @@ public class GatewayController {
      */
     @RequestMapping(value = "/online/deduct", produces = "application/json")
     public Object deduct(@RequestBody VoucherDeductDTO param) {
-        return gatewayService.loadLalancing(param);
+        return gatewayService.deductloadLalancing(param);
     }
 
     /**

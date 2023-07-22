@@ -6,6 +6,7 @@ import com.ksyun.trade.pojo.KscTradeProductConfig;
 import com.ksyun.trade.pojo.Region;
 import com.ksyun.trade.pojo.User;
 import com.ksyun.trade.vo.OrderVo;
+import com.ksyun.trade.vo.RegionVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,7 +40,7 @@ public class TradeOrderService {
         //获取订单配置信息
         List<KscTradeProductConfig> orderconfig = ordertByConfig.query(id);
         //获取地域信息
-        Region region = regionList.get(tradeOrder.getRegionId().toString());
+        RegionVo region = regionList.get(tradeOrder.getRegionId());
         OrderVo orderVo = new OrderVo();
         orderVo.setId(tradeOrder.getId());
         orderVo.setPriceValue(tradeOrder.getPriceValue());

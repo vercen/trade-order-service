@@ -8,6 +8,7 @@ import com.ksyun.trade.pojo.User;
 import com.ksyun.trade.vo.OrderVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,9 +25,15 @@ public class TradeOrderService {
     @Autowired
     private OrdertByConfig ordertByConfig;
 
-    public OrderVo query(Integer id) {
-        KscTradeOrder tradeOrder = orderMapper.queryById(id);
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
+    public OrderVo query(Integer id) {
+        KscTradeOrder tradeOrder = (KscTradeOrder)redisTemplate.opsForValue().get("order:" + id);
+        if (tradeOrder == null) {
+             tradeOrder = orderMapper.queryById(id);
+            redisTemplate.opsForValue().set("order:" + id, tradeOrder);
+        }
         //调用用户查询服务
         User user = userService.querybyid(tradeOrder.getUserId());
         //获取订单配置信息

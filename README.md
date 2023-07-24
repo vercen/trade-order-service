@@ -1,17 +1,21 @@
-#  trade-order
+# 交易订单服务
 
+**项目简介**
 
+交易订单服务是一个基于Java的项目，旨在实现订单相关功能，并提供可靠的负载均衡、限流、超时处理等特性。项目包含两个独立模块：trade-order-gateway和trade-order-api。trade-order-gateway负责请求转发和负载均衡，而trade-order-api则承载核心的订单功能。
 
-## 说明
+**前提条件**
 
-* 项目编码：UTF-8
-* JDK:1.8
-* IDE：不限
-* 项目开发方式  
+在运行服务之前，请确保满足以下先决条件：
+
+- Java 8
+- MySQL数据库
+- Redis服务器
+* 项目开发方式
   - 分支开发，发布时合并主干
   - 环境隔离（profile：local、dev、uat、prod）
 
-## 模块
+### 模块
 
 * biz：公共业务模块（供其它模块调用）<br/>
 * biz-base:基础业务 <br/>
@@ -20,43 +24,81 @@
 * trade-order-api：业务代码 <br/>
 * trade-order-gateway：路由服务 <br/>
 
+**项目结构**
 
-###  代码提交规范
+该项目按照以下结构组织：
 
-#### 提交的原则
+1. **trade-order-gateway**：作为请求转发和负载均衡的模块，trade-order-gateway还实现了分布式锁，以确保在并发情况下的请求唯一性和数据一致性。
 
-* 保持较小的提交粒度，一次提交只做一件事情。提交的粒度可以是一个小功能点或者一个bugfix。更细粒度的提交便于追踪bug，撤回具体的改动比撤回一大块改动更容易。
-* 提交记录一定要明确，避免大量重复及语焉不详。
-* 无直接关联的文件不要在同一次提交。
-* 只有编译通过的代码才可以提交。
-* 每次提交代码，都要写Commit message（提交说明），认真对待提交备注，很有可能以后看备注的人是你自己。
-* git push无须过于频繁。不要每提交一次就推送一次，多积攒几个提交后再推送，这样可以避免在进行一次提交后发现代码中还有小错误。毕竟git push之后要再撤销公共分支的代码，还是要麻烦一些。
-* 功能需求仅一个人进行开发时，在功能完成之前不要着急创建远程分支。
+2. **trade-order-api**：作为核心模块，trade-order-api提供与订单相关的功能，包括查询订单详情、查询机房名称、抵扣券抵扣等功能。
 
+**运行服务**
 
-#### commit message前缀
+以下是运行服务的步骤：
 
+1. 克隆代码库：
+
+```bash
+git clone http://120.92.88.48/${student_feishu_name}/trade-order-service.git
 ```
-提交规则：
 
-feature或feat:新功能
-add : 新增相关内容
-fix:修复bug
-docs:文档添加、修改，如README, CHANGELOG。
-style:格式（不影响代码运行的变动,如格式化，缩进等）
-refactor:重构（即不是新增功能，也不是修改bug的代码变动）
-test:增加测试
-chore:构建过程或辅助工具的变动(如package.sh)
-deps:依赖变更（比如guava版本变更)
-revert:撤销以前的commit(必须写清楚)
-log:增加、调整log输出等
-perf:性能优化
-config:配置文件修改（如第三方接口url调整）
-remove:移除
-experience:体验优化
-ui:纯粹CSS样式变动，不影响功能代码
-other:其他原因，如上述不能覆盖，才用。如：合并代码，解决代码冲突等
+2. 安装依赖并打包项目：
 
-eg：
-refactor：优化调用链
+```bash
+cd trade-order-service
+mvn clean package -Dmaven.test.skip=true -Pprod
 ```
+
+3. 启动服务：
+
+对于本地环境：
+
+```bash
+sh ./bin/start_server.sh -e=local
+```
+
+对于生产环境：
+
+```bash
+sh ./bin/start_server.sh -e=prod
+```
+
+**端点和API**
+
+1. **请求转发(负载均衡)**
+
+  - trade-order-gateway模块负责处理请求转发和向trade-order-api服务的负载均衡。
+  - 在转发请求之前，trade-order-gateway还会实现分布式锁，避免并发情况下的重复请求和数据不一致问题。
+  - 使用随机负载均衡算法，确保请求均匀分布到trade-order-api服务的各个实例中。
+
+2. **查询订单详情**
+
+  - 端点：/online/queryOrderInfo?id={orderId}
+  - 该端点从MySQL数据库获取订单详情。
+  - 使用了Hikari连接池，以确保数据库连接的可靠性。
+  - redis缓存订单详情，避免重复查询数据库。
+
+
+3. **查询机房名称**
+
+  - 端点：/online/queryRegionName?regionId={regionId}
+  - 该端点通过查询第三方接口，根据机房ID获取机房名称。
+  - 响应格式：参考需求中提供的响应结构。
+
+4. **抵扣券抵扣**
+
+  - 端点：/online/voucher/deduct
+  - HTTP方法：POST
+  - 该端点允许用户将抵扣券应用于订单并执行抵扣操作。
+  - 该端点使用Redis实现了分布式锁，避免并发情况下的重复请求和数据不一致问题。
+
+5. **基于Redis的限流（漏桶算法）**
+
+  - 端点：/online/listUpstreamInfo
+  - 该端点使用Redis实现了漏桶算法进行限流。
+  - 响应格式：参考需求中提供的响应结构。
+
+6. **简单的链路跟踪实现**
+
+  - 服务包含链路跟踪功能，使用X-KSY-REQUEST-ID头标识用户请求，并通过该标识串联调用链。
+

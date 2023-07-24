@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.ksyun.trade.service.RegionListService.regionList;
+
 
 @Service
 @Slf4j
@@ -25,14 +25,16 @@ public class TradeOrderService {
     UserService userService;
     @Autowired
     private OrdertByConfig ordertByConfig;
+    @Autowired
+    private RegionListService regionList ;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     public OrderVo query(Integer id) {
-        KscTradeOrder tradeOrder = (KscTradeOrder)redisTemplate.opsForValue().get("order:" + id);
+        KscTradeOrder tradeOrder = (KscTradeOrder) redisTemplate.opsForValue().get("order:" + id);
         if (tradeOrder == null) {
-             tradeOrder = orderMapper.queryById(id);
+            tradeOrder = orderMapper.queryById(id);
             redisTemplate.opsForValue().set("order:" + id, tradeOrder);
         }
         //调用用户查询服务
@@ -40,7 +42,7 @@ public class TradeOrderService {
         //获取订单配置信息
         List<KscTradeProductConfig> orderconfig = ordertByConfig.query(id);
         //获取地域信息
-        RegionVo region = regionList.get(tradeOrder.getRegionId());
+        RegionVo region = regionList.getRegionById(tradeOrder.getRegionId());
         OrderVo orderVo = new OrderVo();
         orderVo.setId(tradeOrder.getId());
         orderVo.setPriceValue(tradeOrder.getPriceValue());

@@ -16,6 +16,6 @@
 
 
     <select id="selectByOrderId"  resultMap="BaseResultMap">
-        select * from ksc_trade_product_config where order_id= #{id};
+        select * from ksc_trade_product_config where order_id= #{id}
     </select>
 </mapper>

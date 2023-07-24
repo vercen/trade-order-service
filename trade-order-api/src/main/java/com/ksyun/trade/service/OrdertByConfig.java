@@ -20,6 +20,8 @@ public class OrdertByConfig {
         if (configList != null) {
             return configList;
         }
+        System.out.println("查询数据库");
+        System.out.println("id = " + id);
         configList = kscTradeProductConfigMapper.selectByOrderId(id);
         redisTemplate.opsForValue().set("config:" + id, configList);
         return configList;

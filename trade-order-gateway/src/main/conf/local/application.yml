@@ -9,3 +9,8 @@ server:
 
 actions: http://localhost:8089,http://localhost:8090
 meta: http://campus.meta.ksyun.com:8090
+spring:
+  redis:
+    database: 3
+    host: 192.168.63.3
+    port: 6379

@@ -28,9 +28,7 @@ public class TradeOrderController {
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("/{id}")
-    public RestResult query(@PathVariable("id") Integer id, @RequestHeader("requestId") String requestId, @RequestHeader("upsteam") String upsteam) {
-
-
+    public RestResult query(@PathVariable("id") Integer id, @RequestHeader("upsteam") String upsteam) {
         OrderVo orderVo = (OrderVo) redisTemplate.opsForValue().get("orderVo:" + id);
         if (orderVo != null) {
             orderVo.setUpsteam(upsteam);
@@ -39,7 +37,7 @@ public class TradeOrderController {
         orderVo = orderService.query(id);
         orderVo.setUpsteam(upsteam);
         redisTemplate.opsForValue().set("orderVo:" + id, orderVo);
-        return RestResult.success().data(orderVo).requestId(requestId);
+        return RestResult.success().data(orderVo);
     }
 
 }

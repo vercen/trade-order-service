@@ -77,6 +77,13 @@ public class RestResult<T> implements Serializable {
         dto.requestId(RequestTraceContextSlf4jMDCHolder.getRequestId());
         return dto;
     }
+     //被限流了
+    public static RestResult limit() {
+        RestResult dto = new RestResult();
+        dto.code(RestConsts.DEFAULT_LIMIT_CODE).msg(RestConsts.LIMIT_MESSAGE);
+        dto.requestId(RequestTraceContextSlf4jMDCHolder.getRequestId());
+        return dto;
+    }
 
     public RestResult() {
 

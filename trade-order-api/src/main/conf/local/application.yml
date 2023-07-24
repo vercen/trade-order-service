@@ -16,17 +16,18 @@ info:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/test_trade?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://43.138.101.148:3306/test_trade?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     maximum-pool-size: 3
     minimum-idle: 2
     username: root
-    password: password
+    password: Password1.1
   redis:
-    host: 192.168.63.3
-    port: 6379
+    host: 43.138.101.148
+    port: 65520
     #password: TkSbRi%xQtFkEX98BQR3yQ==
     database: 3
+    password: Password1.1
 
 meta:
   url: http://campus.meta.ksyun.com:8090

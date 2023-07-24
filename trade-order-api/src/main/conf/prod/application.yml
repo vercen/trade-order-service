@@ -31,4 +31,5 @@ spring:
 meta:
   url: http://campus.meta.ksyun.com:8090
 
-
+mybatis:
+  mapper-locations: classpath*:/mapper/*.xml

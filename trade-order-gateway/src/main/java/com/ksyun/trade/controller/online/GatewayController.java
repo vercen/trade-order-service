@@ -6,8 +6,6 @@ import com.ksyun.trade.service.GatewayService;
 import com.ksyun.trade.service.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.HttpRequestHandler;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,9 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 public class GatewayController {
+
     @Autowired
     private GatewayService gatewayService;
-
     @Autowired
     private RateLimiter rateLimiter;
 
@@ -56,10 +54,10 @@ public class GatewayController {
     @RequestMapping(value = "/online/listUpstreamInfo", produces = "application/json")
     public Object listUpstreamInfo() {
         if (rateLimiter.limitRequest()) {
-            System.out.println("正常访问");
+            log.info("漏桶限流算法，通过");
             return RestResult.success();
         }
-        System.out.println("访问超限");
+        log.info("漏桶限流算法，拒绝");
         return RestResult.limit();
     }
 

@@ -13,7 +13,7 @@ public class RestConsts {
     public static final String ERROR_MESSAGE = "error";
 
     //限流了
-    public static final String LIMIT_MESSAGE = "对不起, 系统压力过大, 请稍后再试!";
+    public static final String LIMIT_MESSAGE = "对不起,系统压力过大,请稍后再试!";
 
     /**
      * op 默认成功操作

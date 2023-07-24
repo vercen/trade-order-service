@@ -10,20 +10,23 @@ import java.util.List;
 
 @Service
 public class OrdertByConfig {
+
     @Autowired
     private KscTradeProductConfigMapper kscTradeProductConfigMapper;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     public List<KscTradeProductConfig> query(Integer id) {
-        List<KscTradeProductConfig> configList =(List<KscTradeProductConfig>) redisTemplate.opsForValue().get("config" + id);
+        List<KscTradeProductConfig> configList = (List<KscTradeProductConfig>) redisTemplate.opsForValue().get("config:" + id);
         if (configList != null) {
             return configList;
         }
-        System.out.println("查询数据库");
-        System.out.println("id = " + id);
-        configList = kscTradeProductConfigMapper.selectByOrderId(id);
-        redisTemplate.opsForValue().set("config:" + id, configList);
+        try {
+            configList = kscTradeProductConfigMapper.selectByOrderId(id);
+            redisTemplate.opsForValue().set("config:" + id, configList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return configList;
     }
 }

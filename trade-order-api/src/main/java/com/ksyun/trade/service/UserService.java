@@ -3,51 +3,61 @@ package com.ksyun.trade.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ksyun.trade.pojo.User;
+import com.mysql.cj.log.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 @Service
+@Slf4j
 public class UserService {
 
-    @Autowired
-    RestTemplate restTemplate;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${meta.url}")
     private String url;
 
-    public User querybyid(Integer id) {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-        User user = (User) redisTemplate.opsForValue().get("user:"+id);
+    @Autowired
+    public UserService(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplateBuilder.build();
+        this.objectMapper = objectMapper;
+    }
+
+    public User querybyid(Integer id) {
+        User user = (User) redisTemplate.opsForValue().get("user:" + id);
         if (user != null) {
             System.out.println(user.toString());
             return user;
         }
-        ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "online/user/" + id, String.class);
+
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "/online/user/" + id, String.class);
         String jsonResponse = forEntity.getBody();
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
             if (jsonNode.has("data")) {
                 JsonNode userData = jsonNode.get("data");
                 user = objectMapper.treeToValue(userData, User.class);
-                redisTemplate.opsForValue().set("user:"+id, user);
+                redisTemplate.opsForValue().set("user:" + id, user);
                 return user;
             } else {
-                // 处理错误、数据未找到或其他情况
+                log.error("查询用户信息失败，用户ID：{}", id);
             }
         } catch (IOException e) {
             // 处理JSON解析错误
             e.printStackTrace();
         }
-
         return null;
     }
 }

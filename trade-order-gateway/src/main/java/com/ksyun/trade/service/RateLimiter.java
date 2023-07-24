@@ -7,38 +7,34 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class RateLimiter {
+    private static final long INTERVAL_TIME = 1000;
+    private static final int MAX_REQUESTS = 5; // QPS = 5
+    private static final String LUA_SCRIPT_PATH = "ratelimiter.lua"; // Lua脚本在resources目录下
+
+    private final RedisTemplate<String, String> redisTemplate;
+    private final DefaultRedisScript<Long> redisScript;
+
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-    private static final long intervalTime = 1000;
-    private static final int maxRequests = 5; // QPS = 5
+    public RateLimiter(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+        this.redisScript = new DefaultRedisScript<>();
+        this.redisScript.setLocation(new ClassPathResource(LUA_SCRIPT_PATH));
+        this.redisScript.setResultType(Long.class);
+    }
+
     // 漏桶限流算法
     public Boolean limitRequest() {
-        Long currentTime = new Date().getTime();
-        String requestId = getID();
-        String luaScriptPath = "ratelimiter.lua"; // Lua脚本在resources目录下
-
-        // 读取Lua脚本文件
-        ClassPathResource scriptResource = new ClassPathResource(luaScriptPath);
-
-        // 创建RedisScript对象
-        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-        redisScript.setLocation(scriptResource);
-        redisScript.setResultType(Long.class);
+        Long currentTime = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
 
         // 执行Lua脚本
         Long result = redisTemplate.execute(redisScript, Arrays.asList("ratelimiter"),
-                String.valueOf(currentTime), String.valueOf(intervalTime), requestId, String.valueOf(maxRequests));
+                String.valueOf(currentTime), String.valueOf(INTERVAL_TIME), requestId, String.valueOf(MAX_REQUESTS));
 
         return result != null && result == 1;
     }
-
-    private String getID() {
-        return UUID.randomUUID().toString();
-    }
-
 }

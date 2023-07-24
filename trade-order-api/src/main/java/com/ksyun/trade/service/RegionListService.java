@@ -29,7 +29,6 @@ public class RegionListService {
             regionList = new ConcurrentHashMap<>();
             ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "/online/region/list", String.class);
             String jsonResponse = forEntity.getBody();
-            System.out.println("发送请求获取到的数据：");
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(jsonResponse);

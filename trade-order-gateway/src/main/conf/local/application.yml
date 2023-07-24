@@ -1,17 +1,17 @@
 info:
   app:
-    name: trade-order-gateway
+    name: trade-order-gateway-fuxiaoming
     env: local
     ver: v0.0.1
 
 server:
   port: 8088
 
-actions: http://localhost:8089,http://localhost:8090
+actions: http://campus.query1.ksyun.com:8089,http://campus.query2.ksyun.com:8090
 meta: http://campus.meta.ksyun.com:8090
 spring:
   redis:
-    database: 3
+    db: 3
     host: 43.138.101.148
     port: 65520
     password: Password1.1

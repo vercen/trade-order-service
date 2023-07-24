@@ -10,7 +10,7 @@ server:
 
 info:
   app:
-    name: trade-order-api
+    name: trade-order-api-fuxiaoming
     env: local
     ver: v0.0.1
 
@@ -25,8 +25,7 @@ spring:
   redis:
     host: 43.138.101.148
     port: 65520
-    #password: TkSbRi%xQtFkEX98BQR3yQ==
-    database: 3
+    db: 3
     password: Password1.1
 
 meta:

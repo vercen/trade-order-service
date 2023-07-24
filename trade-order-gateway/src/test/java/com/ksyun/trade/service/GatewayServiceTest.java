@@ -12,6 +12,7 @@ public class GatewayServiceTest extends BaseSpringAllTest {
     private GatewayService gatewayService;
 
     @Test
-    public void query() {
+    public void testOrderloadLalancing() {
+        gatewayService.orderloadLalancing(1, "www.baidu.com");
     }
 }

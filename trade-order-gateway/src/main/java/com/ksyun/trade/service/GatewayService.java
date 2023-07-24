@@ -4,9 +4,9 @@ import com.ksyun.trade.client.OrderClient;
 import com.ksyun.trade.dto.VoucherDeductDTO;
 import com.ksyun.trade.rest.RestResult;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -24,56 +23,55 @@ public class GatewayService {
     @Autowired
     private OrderClient orderClient;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private static final String ONLINE_TRADE_ORDER_ENDPOINT = "/online/trade_order/";
+    private static final String ONLINE_REGION_NAME_ENDPOINT = "/online/region/name/";
 
     @Value("${meta}")
     private String mate;
 
-    public Object orderloadLalancing(Integer param,String requestId) {
-        // 1. 模拟路由 (负载均衡) 获取接口
-        String url = orderClient.getRandomUrl() + "/online/trade_order/" + param;
-        log.info("url:{}", url);
-        log.info("param:{}", param);
-        // 2. 请求转发
-        // 创建 HttpHeaders 对象，并添加自定义请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("upsteam", url);
-        headers.add("X-KSY-REQUEST-ID", requestId);
+    @Autowired
+    public GatewayService(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
+    }
+
+    public Object orderloadLalancing(Integer param, String requestId) {
+        String url = orderClient.getRandomUrl() + ONLINE_TRADE_ORDER_ENDPOINT + param;
+        HttpHeaders headers = createHeaders(url, requestId);
         HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
         ResponseEntity<Object> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Object.class);
         return responseEntity.getBody();
     }
 
-    //根据机房Id查询机房名称
     public Object regionIdloadLalancing(Integer param) {
-
-        int maxRetries = 3;
+        int maxRetries = 5;
         int retryCount = 0;
 
         while (retryCount < maxRetries) {
-            ResponseEntity<Map> forEntity = restTemplate.getForEntity(mate + "/online/region/name/" + param, Map.class);
+            ResponseEntity<Map> forEntity = restTemplate.getForEntity(mate + ONLINE_REGION_NAME_ENDPOINT + param, Map.class);
             Map<String, Object> responseMap = forEntity.getBody();
-            if ((int) responseMap.get("code") == 500&&(String) responseMap.get("msg")!="null") {
-                retryCount++;
-            } else {
+            if ( (int) responseMap.get("code") == 200 && responseMap.get("msg")!=null && responseMap.get("data") != null) {
                 return forEntity.getBody();
+            } else {
+                retryCount++;
             }
         }
         return RestResult.success().data("请求数据不存在");
     }
 
-    public Object deductloadLalancing(VoucherDeductDTO param,String requestId) {
-        // 1. 模拟路由 (负载均衡) 获取接口
+    public Object deductloadLalancing(VoucherDeductDTO param, String requestId) {
         String url = orderClient.getRandomUrl() + "/online/order_coupon";
-        // 2. 请求转发
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("upsteam", url);
-        headers.add("X-KSY-REQUEST-ID", requestId);
-        // 3. 构造请求参数
+        HttpHeaders headers = createHeaders(url, requestId);
         HttpEntity<VoucherDeductDTO> requestEntity = new HttpEntity<>(param, headers);
         ResponseEntity<Object> responseEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Object.class);
         return responseEntity.getBody();
+    }
+
+    private HttpHeaders createHeaders(String url, String requestId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("upsteam", url);
+        headers.add("X-KSY-REQUEST-ID", requestId);
+        return headers;
     }
 }

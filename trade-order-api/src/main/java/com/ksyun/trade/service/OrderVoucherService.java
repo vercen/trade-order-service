@@ -22,66 +22,81 @@ public class OrderVoucherService {
 
     @Autowired
     private TradeOrderService tradeOrderService;
+
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private OrderVoucherDeductMapper orderVoucherDeductMapper;
+
     @Autowired
     private RedisScript<Long> redisScript;
+    @Autowired
+    private OrderVoucherDeductMapper orderVoucherDeductMapper;
 
+    private static final String LOCK_PREFIX = "lock:";
+    private static final long LOCK_EXPIRATION_TIME = 3; // 3 seconds
 
     public Boolean calculateDiscountAmount(VoucherDeductDTO param) {
 
-        Boolean aBoolean = redisTemplate.hasKey("voucher:" + param.getVoucherNo());
-        //如果已经使用过了，就不能再使用了
-        //实现幂等
-        if (aBoolean) {
+        Boolean exists = redisTemplate.hasKey("voucher:" + param.getVoucherNo());
+        // 如果已经使用过了，就不能再使用了，实现幂等
+        if (exists) {
             return true;
         }
+
         String uuid = UUID.randomUUID().toString();
-        //查询订单的价格
+        // 查询订单的价格
         BigDecimal priceValue = tradeOrderService.query(param.getOrderId()).getPriceValue();
-        //分布式锁
-        //Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock:" + param.getOrderId(), uuid, 3, TimeUnit.SECONDS);
-        while ((redisTemplate.opsForValue().setIfAbsent("lock:" + param.getOrderId(), uuid, 3, TimeUnit.SECONDS))) {
-            KscVoucherDeduct kscVoucherDeduct = new KscVoucherDeduct();
-            //设置订单ID
-            kscVoucherDeduct.setOrderId(param.getOrderId());
-            //设置优惠券ID
-            kscVoucherDeduct.setVoucherNo(param.getVoucherNo());
-            //设置抵扣券金额
-            kscVoucherDeduct.setAmount(param.getAmount());
-            //设置订单抵扣券前金额
-            BigDecimal bigDecimal = orderVoucherDeductMapper.selectVoucherDeductAmount(param.getOrderId());
-            System.out.println("bigDecimal = " + bigDecimal);
-            System.out.println("priceValue = " + priceValue);
-            if (bigDecimal == null) {
-                bigDecimal = BigDecimal.ZERO;
-            }
-            if (bigDecimal.compareTo(priceValue) > 0) {
-                bigDecimal = priceValue;
-            }
-            kscVoucherDeduct.setBeforeDeductAmount(priceValue.subtract(bigDecimal));
-            //设置订单抵扣券后金额
-            if (kscVoucherDeduct.getBeforeDeductAmount().compareTo(param.getAmount()) < 0) {
-                kscVoucherDeduct.setAfterDeductAmount(BigDecimal.ZERO);
-            } else {
-                kscVoucherDeduct.setAfterDeductAmount(kscVoucherDeduct.getBeforeDeductAmount().subtract(param.getAmount()));
-            }
-            //插入数据库
-            int insert = kscVoucherDeductMapper.insert(kscVoucherDeduct);
-            if (insert != 1) {
-                //释放锁
-                redisTemplate.execute(redisScript, Arrays.asList("lock:" + param.getOrderId()), uuid);
-                return false;
-            }
+        String lockKey = LOCK_PREFIX + param.getOrderId();
 
-            redisTemplate.opsForValue().set("voucher:" + param.getVoucherNo(), kscVoucherDeduct);
-            //释放锁
-            redisTemplate.execute(redisScript, Arrays.asList("lock:" + param.getOrderId()), uuid);
-            return true;
+        // 分布式锁优化
+        Boolean lock = redisTemplate.opsForValue().setIfAbsent(lockKey, uuid, LOCK_EXPIRATION_TIME, TimeUnit.SECONDS);
+        if (lock != null && lock) {
+            try {
+                KscVoucherDeduct kscVoucherDeduct = new KscVoucherDeduct();
+                // 设置订单ID
+                kscVoucherDeduct.setOrderId(param.getOrderId());
+                // 设置优惠券ID
+                kscVoucherDeduct.setVoucherNo(param.getVoucherNo());
+                // 设置抵扣券金额
+                kscVoucherDeduct.setAmount(param.getAmount());
+                // 设置订单抵扣券前金额
+//                BigDecimal beforeDeductAmount = orderVoucherDeductMapper.selectVoucherDeductAmount(param.getOrderId());
+//                if (beforeDeductAmount == null) {
+//                    beforeDeductAmount = BigDecimal.ZERO;
+//                }
+//                if (beforeDeductAmount.compareTo(priceValue) > 0) {
+//                    beforeDeductAmount = priceValue;
+//                }
+//                kscVoucherDeduct.setBeforeDeductAmount(priceValue.subtract(beforeDeductAmount));
+                BigDecimal totalDeduction = orderVoucherDeductMapper.selectVoucherDeductAmount(param.getOrderId());
+                if (totalDeduction == null) {
+                    totalDeduction = BigDecimal.ZERO;
+                }
+                BigDecimal beforeDeductAmount = priceValue.subtract(totalDeduction).min(priceValue);
+                BigDecimal afterDeductAmount = beforeDeductAmount.subtract(param.getAmount()).max(BigDecimal.ZERO);
+                kscVoucherDeduct.setBeforeDeductAmount(beforeDeductAmount);
+                kscVoucherDeduct.setAfterDeductAmount(afterDeductAmount);
+                // 设置订单抵扣券后金额
+//                if (kscVoucherDeduct.getBeforeDeductAmount().compareTo(param.getAmount()) < 0) {
+//                    kscVoucherDeduct.setAfterDeductAmount(BigDecimal.ZERO);
+//                } else {
+//                    kscVoucherDeduct.setAfterDeductAmount(kscVoucherDeduct.getBeforeDeductAmount().subtract(param.getAmount()));
+//                }
+                // 插入数据库
+                int insert = kscVoucherDeductMapper.insert(kscVoucherDeduct);
+                if (insert != 1) {
+                    //插入失败 释放锁
+                    redisTemplate.execute(redisScript, Arrays.asList(lockKey), uuid);
+                    return false;
+                }
+                redisTemplate.opsForValue().set("voucher:" + param.getVoucherNo(), kscVoucherDeduct);
+            } finally {
+                // 在finally块中释放锁，以防止异常情况下锁未释放
+                redisTemplate.execute(redisScript, Arrays.asList(lockKey), uuid);
+                return true;
+
+            }
         }
-        return true;
 
+        return true;
     }
 }

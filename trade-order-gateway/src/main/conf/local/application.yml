@@ -11,7 +11,7 @@ actions: http://campus.query1.ksyun.com:8089,http://campus.query2.ksyun.com:8090
 meta: http://campus.meta.ksyun.com:8090
 spring:
   redis:
-    db: 3
     host: 43.138.101.148
     port: 65520
     password: Password1.1
+    database: 3

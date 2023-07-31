@@ -25,8 +25,8 @@ spring:
   redis:
     host: 43.138.101.148
     port: 65520
-    db: 3
     password: Password1.1
+    database: 3
 
 meta:
   url: http://campus.meta.ksyun.com:8090

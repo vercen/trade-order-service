@@ -26,7 +26,8 @@ spring:
     host: campus.redis.ksyun.com
     port: 6379
     password: TkSbRi%xQtFkEX98BQR3yQ==
-    db: 3
+    database: 3
+
 
 meta:
   url: http://campus.meta.ksyun.com:8090

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 
 @RestController
 @Slf4j
@@ -58,7 +59,11 @@ public class GatewayController {
             return RestResult.success();
         }
         log.info("漏桶限流算法，拒绝");
-        return RestResult.limit();
+        ArrayList<Object> objects = new ArrayList<>();
+        //["campus.query1.ksyun.com", "campus.query2.ksyun.com"]
+        objects.add("campus.query1.ksyun.com");
+        objects.add("campus.query2.ksyun.com");
+        return RestResult.limit().data(objects);
     }
 
 }

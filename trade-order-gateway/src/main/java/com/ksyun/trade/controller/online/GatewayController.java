@@ -56,14 +56,15 @@ public class GatewayController {
     public Object listUpstreamInfo() {
         if (rateLimiter.limitRequest()) {
             log.info("漏桶限流算法，通过");
-            return RestResult.success();
+            ArrayList<Object> objects = new ArrayList<>();
+            //["campus.query1.ksyun.com", "campus.query2.ksyun.com"]
+            objects.add("campus.query1.ksyun.com");
+            objects.add("campus.query2.ksyun.com");
+            return RestResult.success().data(objects);
         }
         log.info("漏桶限流算法，拒绝");
-        ArrayList<Object> objects = new ArrayList<>();
-        //["campus.query1.ksyun.com", "campus.query2.ksyun.com"]
-        objects.add("campus.query1.ksyun.com");
-        objects.add("campus.query2.ksyun.com");
-        return RestResult.limit().data(objects);
+
+        return RestResult.limit();
     }
 
 }
